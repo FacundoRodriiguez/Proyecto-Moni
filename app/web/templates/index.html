@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Préstamo</title>
+    {% load static %}
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<div>
+    <header>
+        <h1>Solicitud de Préstamo</h1>
+        <p>Complete el formulario para solicitar su préstamo</p>
+    </header>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <div class="form">
+    {% csrf_token %}
+    <fieldset>
+        <div class="lista">
+        <label for="nombre">Nombre completo:</label>
+        <input type="text" id="nombre" name="nombre" required>
+        <label for="email">Correo electrónico:</label>
+        <input type="email" id="email" name="email" required>
+        <label for="dni">DNI:</label>
+        <input type="number" id="dni" name="dni" required>
+        <label for="fecha_nacimiento">Fecha de nacimiento:</label>
+        <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required>
+        <label for="genero">Género:</label>
+        <select id="genero" name="genero" required>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="otro">Otro</option>
+        </select> <br>
+        <label for="monto_solicitado">Monto del préstamo:</label>
+        <input type="number" id="monto_solicitado" name="monto" required>
+        </div>
+
+    </fieldset>
+    <div class="botonenviar">
+    <button onclick="enviar()">Enviar Solicitud</button>
+    </div>    
+    </div>
+        <div class="testimonios">
+            <h2>Lo que dicen nuestros clientes</h2>
+            <div class="testimonial">
+                <p>"¡Obtuve mi préstamo rápidamente y sin complicaciones!"</p>
+                <p class="nombre">- Cliente Satisfecho</p>
+            </div>
+            <button onclick="location.href='/solicitudes/'" type="button" class="btn btn-success">Iniciar Sesion</button>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Solicitud de Préstamo</p>
+    </footer>
+</div>
+
+
+<script type="text/javascript">
+    function validar() {
+        let dni, nombre_y_apellido, genero, fecha_nacimiento, email, monto_solicitado, expresion;
+        dni = document.getElementById("dni").value; 
+        nombre_y_apellido = document.getElementById("nombre").value;
+        genero = document.getElementById("genero").value;
+        fecha_nacimiento = document.getElementById("fecha_nacimiento").value;
+        email = document.getElementById("email").value;
+        monto_solicitado = document.getElementById("monto_solicitado").value;
+        expresion = /\w+@\w+\.+[a-z]/;
+
+        if (dni === "" || nombre_y_apellido === "" || genero === "" || fecha_nacimiento === "" || email === "" || monto_solicitado === "") {
+            alert("Todos los campos son obligatorios");
+            return false;
+        }
+        else if (dni.length > 8) {
+            alert("El DNI es muy largo");
+            return false;
+        }
+        else if (nombre_y_apellido.length > 50) {
+            alert("El nombre y apellido es muy largo");
+            return false;
+        }
+        else if (genero.length > 10) {
+            alert("El genero es muy largo");
+            return false;
+        }
+        else if (fecha_nacimiento.length > 10) {
+            alert("La fecha de nacimiento es muy larga");
+            return false;
+        }
+        else if (email.length > 50) {
+            alert("El email es muy largo");
+            return false;
+        }
+        else if (!expresion.test(email)) {
+            alert("El email no es valido");
+            return false;
+        }
+        else if (monto_solicitado.length > 10) {
+            alert("El monto solicitado es muy largo");
+            return false;
+        }
+        return true;
+    }
+    function enviar() {
+        if (validar() === false) {
+            return false;
+        }
+        fetch('/api/prestamos/', {
+            method: 'POST',
+            body: JSON.stringify({
+                dni: document.getElementById("dni").value,
+                nombre_apellido: document.getElementById("nombre").value,
+                genero: document.getElementById("genero").value,
+                fecha_nacimiento: document.getElementById("fecha_nacimiento").value,
+                email: document.getElementById("email").value,
+                monto_solicitado: document.getElementById("monto_solicitado").value
+            }),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        })
+            .then(response => response.json())
+            .then(json => {
+                console.log(json);
+                // informo si se creo correctamente
+                if (json.aprobado === true) {
+                    alert("Su prestamo fue aprobado!");
+                } else {
+                    alert("Prestamo no aprobado!");
+                }
+            })
+
+    }
+</script>
+
+</body>
+</html>

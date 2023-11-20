@@ -1,0 +1,153 @@
+<table id="tabla">
+    <tr>
+        <th>DNI</th>
+        <th>Nombre Y Apellido</th>
+        <th>Genero</th>
+        <th>Email</th>
+        <th>Monto Solicitado</th>
+    </tr>
+</table>
+<button name="cerrar" type="submit" onclick="location.href= '/accounts/logout/'">Cerrar Sesion</button>
+<br>
+<br>
+<div id="contenedor_editable" style='display: none;'>
+    <h1>Editar</h1>
+    <fieldset>
+        <input type="number" id="dni" placeholder="DNI" required />
+        <input type="text" id="nombre_y_apellido" placeholder="Nombre Y Apellido" required />
+        <input type="text" id="genero" placeholder="Genero" required />
+        <input type="text" id="email" placeholder="Email" required />
+        <input type="text" id="monto_solicitado" placeholder="Monto Solicitado" required />
+    </fieldset>
+    <button onclick="editar()" type="button" class="btn btn-success">Guardar edicion</button>
+    <button onclick="document.getElementById('contenedor_editable').style.display='none'" type="button"
+        class="btn btn-secondary">Cancelar</button>
+</div>
+
+
+<script type="text/javascript">
+
+    function obtenerDatos() {
+        //obtengo los datos de /api/prestamos/
+        fetch('/api/prestamos/')
+            .then(response => response.json())
+            .then(datos => {
+                crearTabla(datos);
+
+            })
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+
+    //funcion para que el boton elimine cada fila
+    function eliminar(id) {
+        fetch(url = '/api/prestamos/' + id + '/', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+        })
+            .then(response => response.json())
+            .then(datos => {
+                location.reload();
+            })
+    }
+    let id_editar = 0;
+    function editar() {
+        // Define the data that you want to send
+        const datos = {
+            "dni": document.getElementById("dni").value,
+            "nombre_apellido": document.getElementById("nombre_y_apellido").value,
+            "genero": document.getElementById("genero").value,
+            "email": document.getElementById("email").value,
+            "monto_solicitado": document.getElementById("monto_solicitado").value,
+        }
+        // Create the request
+        const request = new Request('/api/prestamos/' + id_editar + '/', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrftoken
+            },
+            body: JSON.stringify(datos)
+
+        });
+        fetch(request)
+            .then(response => response.json())
+            .then(datos => {
+                location.reload();
+            })
+
+    };
+
+    function crearTabla(datos) {
+        // creo la tabla
+        let tabla = document.getElementById("tabla");
+        // recorro los datos
+
+        for (let i = 0; i < datos.length; i++) {
+            // creo una fila
+
+            let fila = document.createElement("tr");
+            // creo las celdas
+            let dni = document.createElement("td");
+            let nombre_y_apellido = document.createElement("td");
+            let genero = document.createElement("td");
+            let email = document.createElement("td");
+            let monto_solicitado = document.createElement("td");
+            // agrego los datos a las celdas
+            dni.innerHTML = datos[i].dni;
+            nombre_y_apellido.innerHTML = datos[i].nombre_apellido;
+            genero.innerHTML = datos[i].genero;
+            email.innerHTML = datos[i].email;
+            monto_solicitado.innerHTML = datos[i].monto_solicitado;
+            // agrego las celdas a la fila
+            fila.appendChild(dni);
+            fila.appendChild(nombre_y_apellido);
+            fila.appendChild(genero);
+            fila.appendChild(email);
+            fila.appendChild(monto_solicitado);
+            // agrego la fila a la tabla
+            tabla.appendChild(fila);
+
+            // creo el boton eliminar
+            let boton = document.createElement("button");
+            boton.innerHTML = "Eliminar";
+            boton.onclick = function () {
+                eliminar(datos[i].id);
+            }
+            fila.appendChild(boton);
+
+            //creo boton editar
+            let botonEditar = document.createElement("button");
+            botonEditar.innerHTML = "Editar";
+            botonEditar.onclick = function () {
+                document.getElementById('contenedor_editable').style.display = 'block'
+                id_editar = datos[i].id;
+                document.getElementById("dni").value = datos[i].dni;
+                document.getElementById("nombre_y_apellido").value = datos[i].nombre_apellido;
+                document.getElementById("genero").value = datos[i].genero;
+                document.getElementById("email").value = datos[i].email;
+                document.getElementById("monto_solicitado").value = datos[i].monto_solicitado;
+            }
+            fila.appendChild(botonEditar);
+        }
+    }
+    window.onload = obtenerDatos;
+</script>

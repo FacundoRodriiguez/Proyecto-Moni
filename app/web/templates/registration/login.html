@@ -1,0 +1,6 @@
+<form method="post" action= "/accounts/login/">
+    {% csrf_token %}
+    <input type="text" id="login"  name="username" placeholder="Usuario">
+    <input type="password" id="login"  name="password" placeholder="Contraseña">
+    <input type="submit"  value="Iniciar Sesion">
+</form>
